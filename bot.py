@@ -1,10 +1,6 @@
-"""
-Simple Bot to reply to Telegram messages taken from the python-telegram-bot examples.
-Deployed using heroku.
-Author: liuhh02 https://medium.com/@liuhh02
-"""
 
 import logging
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
 PORT = int(os.environ.get('PORT', 5000))
@@ -13,22 +9,69 @@ PORT = int(os.environ.get('PORT', 5000))
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
+text_AmbasadorProgram = '🔊 Ambasador program'
+text_OfficialLinks = '🌐 Official links'
+text_FAQ = '🚀 FAQ'
+
+text_Twitter = 'Twitter'
+text_Discord = 'Discord'
+text_OfficialSite = 'Official site'
+text_OtherLinks = 'Other links'
 logger = logging.getLogger(__name__)
 TOKEN = '5117226938:AAEQj0XxRK8jh46qV2H4BoCuaVFYR8xFBI8'
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
-    """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi!')
+    keyboard = [
+        [
+            KeyboardButton(text_AmbasadorProgram, callback_data='1'),
+            KeyboardButton(text_OfficialLinks, callback_data='2'),
+            KeyboardButton(text_FAQ, callback_data='3'),
+        ]
+    ]
+
+    reply_markup = ReplyKeyboardMarkup(keyboard)
+
+    update.message.reply_text('Hi, ' + update.message.from_user['first_name'] + '!\n\
+I’m PlanetQuest FAQ Bot driven by community.\
+You can ask me about PlanetQuest’s aim and main protocol features. Enjoy!', reply_markup=reply_markup)
 
 def help(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
 
-def echo(update, context):
-    """Echo the user message."""
-    update.message.reply_text(update.message.text)
+def text(update, context):
+    keyboard = [
+        [
+            KeyboardButton(text_AmbasadorProgram, callback_data='1'),
+            KeyboardButton(text_OfficialLinks, callback_data='2'),
+            KeyboardButton(text_FAQ, callback_data='3'),
+        ]
+    ]
+
+    reply_markup = ReplyKeyboardMarkup(keyboard)
+
+    if(update.message.text == text_AmbasadorProgram):
+        update.message.reply_text('https://medium.com/@planetquestgame/introducing-the-community-explorers-ambassador-program-ed68ba92d93e', reply_markup=reply_markup)
+    elif(update.message.text == text_OfficialLinks):
+        keyboard = [
+            [
+                InlineKeyboardButton(text_Twitter, url='https://twitter.com/JoinPlanetQuest'),
+                InlineKeyboardButton(text_Discord, url='https://discord.gg/planetquest')
+            ],
+            [InlineKeyboardButton(text_OfficialSite, url='https://planetquest.io/')],
+            [InlineKeyboardButton(text_OtherLinks, url='https://linktr.ee/PlanetQuest')],
+        ]  
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        update.message.reply_text('What link do you need?', reply_markup=reply_markup)
+
+    elif(update.message.text == text_FAQ):
+        update.message.reply_text('https://medium.com/@sky.skyska.ska/hi-guys-5dc52912d8f2', reply_markup=reply_markup) 
+    
+    else:
+        update.message.reply_text('⁉️ Unknown command. Please, press one of buttons below.', reply_markup=reply_markup)
+
 
 def error(update, context):
     """Log Errors caused by Updates."""
@@ -49,12 +92,13 @@ def main():
     dp.add_handler(CommandHandler("help", help))
 
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
+    dp.add_handler(MessageHandler(Filters.text, text))
 
     # log all errors
     dp.add_error_handler(error)
 
-    # Start the Bot
+    # Start the Bot    
+    #updater.start_polling()
     updater.start_webhook(listen="0.0.0.0",
                           port=int(PORT),
                           url_path=TOKEN)
